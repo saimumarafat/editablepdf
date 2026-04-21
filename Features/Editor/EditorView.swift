@@ -65,15 +65,6 @@ struct EditorView: View {
                     .foregroundStyle(isDarkTheme ? .white : .black)
                 }
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    let current = AppThemeMode(rawValue: preferredAppTheme) ?? .dark
-                    preferredAppTheme = (current == .dark) ? AppThemeMode.light.rawValue : AppThemeMode.dark.rawValue
-                }) {
-                    Image(systemName: isDarkTheme ? "moon.fill" : "sun.max.fill")
-                        .foregroundStyle(isDarkTheme ? .white : .black)
-                }
-            }
         }
         .fileExporter(
             isPresented: $isPresentingExporter,
@@ -332,15 +323,6 @@ struct PreviewEditorView: View {
                         Text("Back")
                     }
                     .foregroundStyle(isDarkTheme ? .white : .black)
-                }
-            }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    let current = AppThemeMode(rawValue: preferredAppTheme) ?? .dark
-                    preferredAppTheme = (current == .dark) ? AppThemeMode.light.rawValue : AppThemeMode.dark.rawValue
-                }) {
-                    Image(systemName: isDarkTheme ? "moon.fill" : "sun.max.fill")
-                        .foregroundStyle(isDarkTheme ? .white : .black)
                 }
             }
         }

@@ -123,6 +123,8 @@ struct HomeView: View {
     @State private var contentOffset:  CGFloat = 30
     @State private var contentOpacity: Double  = 0
 
+    private let onboardingContentMaxWidth: CGFloat = 440
+
     var body: some View {
         ZStack {
             Color(.systemBackground).ignoresSafeArea()
@@ -212,6 +214,25 @@ struct HomeView: View {
         VStack(spacing: 0) {
             Spacer()
 
+            HStack(spacing: 8) {
+                Image(systemName: "doc.text.viewfinder")
+                    .font(.system(size: 14, weight: .semibold))
+                Text("EditablePDF Studio")
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .tracking(0.3)
+            }
+            .foregroundStyle(fg.opacity(0.65))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(
+                Capsule(style: .continuous)
+                    .fill((isDark ? Color.white : Color.black).opacity(0.06))
+            )
+            .overlay(
+                Capsule(style: .continuous)
+                    .strokeBorder((isDark ? Color.white : Color.black).opacity(0.14), lineWidth: 1)
+            )
+
             // Logo
             nestedLogoGraphic
                 .scaleEffect(logoScale)
@@ -226,21 +247,24 @@ struct HomeView: View {
             Spacer().frame(height: 48)
 
             // Copy
-            VStack(alignment: .leading, spacing: 14) {
-                Text("Turn any document\ninto an editable PDF.")
-                    .font(.system(size: 30, weight: .bold))
-                    .foregroundStyle(fg)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(spacing: 10) {
+                Text("Editable PDF")
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundStyle(fg.opacity(0.62))
+                    .tracking(0.8)
 
-                Text("Snap a photo or upload an image. The app recognises text, detects coloured regions, and assembles a crisp, editable PDF you can share instantly.")
-                    .font(.system(size: 15))
-                    .foregroundStyle(fg.opacity(0.52))
-                    .lineSpacing(5)
+                Text("Turn documents into\nclean editable PDFs")
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundStyle(fg)
+                    .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text("Scan or upload to start")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(fg.opacity(0.55))
             }
             .padding(.horizontal, 28)
+            .frame(maxWidth: onboardingContentMaxWidth)
             .offset(y: contentOffset)
             .opacity(contentOpacity)
             .onAppear {
@@ -284,6 +308,7 @@ struct HomeView: View {
                 isDark:   isDark
             ) { isShowingCamera = true }
         }
+        .frame(maxWidth: onboardingContentMaxWidth)
         .padding(.horizontal, 32)
     }
 

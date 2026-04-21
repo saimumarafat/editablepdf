@@ -26,31 +26,38 @@ final class PDFExportService: PDFExporting, @unchecked Sendable {
 
                 UIGraphicsPushContext(context.cgContext)
 
-                // ── Layer 1: Always draw the source image ─────────────────────────
-                if let data = page.sourceImageData, let img = UIImage(data: data) {
+                // If the page has extracted elements, build a reconstructed PDF page.
+                // Otherwise, fall back to embedding the original source image.
+                let hasStructuredElements = !page.elements.isEmpty
+
+                if hasStructuredElements {
+                    fillBackground(for: page, in: pageRect)
+
+                    let sourceImage = page.sourceImageData.flatMap(UIImage.init(data:))
+                    for element in page.elements {
+                        switch element {
+                        case .text(let text):
+                            drawText(text, pageRect: pageRect)
+                        case .image(let image):
+                            drawImageElement(image, pageRect: pageRect, sourceImage: sourceImage)
+                        case .table(let table):
+                            drawTable(table, pageRect: pageRect)
+                        }
+                    }
+                } else if let data = page.sourceImageData, let img = UIImage(data: data) {
                     img.draw(in: pageRect)
                 } else {
-                    switch page.background {
-                    case .color(let r, let g, let b, let a):
-                        UIColor(red: r, green: g, blue: b, alpha: a).setFill()
-                    default:
-                        UIColor.white.setFill()
-                    }
-                    UIRectFill(pageRect)
-                }
-
-                // ── Layer 2: Render all text (including OCR detected text) ───────
-                // If isUserEdited is false, it's auto-detected. We now render it 
-                // to make the "conversion" feel real.
-                for element in page.elements {
-                    if case .text(let text) = element {
-                        drawText(text, pageRect: pageRect)
-                    }
+                    fillBackground(for: page, in: pageRect)
                 }
 
                 UIGraphicsPopContext()
             }
         }
+    }
+
+    private func fillBackground(for page: DocumentPage, in pageRect: CGRect) {
+        UIColor.white.setFill()
+        UIRectFill(pageRect)
     }
 
     // MARK: - Text
@@ -59,32 +66,19 @@ final class PDFExportService: PDFExporting, @unchecked Sendable {
         let frame = clamp(text.frame.cgRect, to: pageRect)
         guard frame.width > 1, frame.height > 1 else { return }
 
-        // ── Step 1: Mask the original image-text with the background color ────
-        // This effectively "erases" the text from the image, making the newly 
-        // drawn PDF text the only version visible.
-        if let bg = text.backgroundColor {
-            bg.swiftUIColor.setFill()
-            UIRectFill(frame)
-        } else {
-            // Fallback: white if no background detected
-            UIColor.white.setFill()
-            UIRectFill(frame)
-        }
+        // Add a background patch when the text block has a detected background color.
+        // This helps preserve row/box coloring on reconstructed pages.
+        // Do not paint sampled background patches in normalized mode.
 
         // ── Step 2: Draw real PDF text on top ─────────────────────────────
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.alignment = text.alignment.nsTextAlignment
         paragraphStyle.lineBreakMode = .byWordWrapping
 
-        let fontSize = max(text.fontSize, 8)
+        let fontSize = max(text.fontSize, 9)
         let font = AppFont.resolveUIFont(id: text.fontName, size: fontSize)
 
-        let inkColor = UIColor(
-            red:   CGFloat(text.color.red),
-            green: CGFloat(text.color.green),
-            blue:  CGFloat(text.color.blue),
-            alpha: 1.0
-        )
+        let inkColor = UIColor.black
 
         let attrs: [NSAttributedString.Key: Any] = [
             .font:            font,
@@ -170,6 +164,13 @@ final class PDFExportService: PDFExporting, @unchecked Sendable {
         let cellH   = frame.height / CGFloat(numRows)
         let cellW   = frame.width  / CGFloat(numCols)
 
+        // Header row background for clearer hierarchy.
+        if numRows > 0 {
+            let headerRect = CGRect(x: frame.minX, y: frame.minY, width: frame.width, height: cellH)
+            UIColor(white: 0.92, alpha: 0.9).setFill()
+            UIBezierPath(rect: headerRect).fill()
+        }
+
         // ── 1. Grid lines only — NO opaque fills, background shows through ────
         for r in 0...numRows {
             let y    = frame.minY + CGFloat(r) * cellH
@@ -177,8 +178,8 @@ final class PDFExportService: PDFExporting, @unchecked Sendable {
             path.move(to: CGPoint(x: frame.minX, y: y))
             path.addLine(to: CGPoint(x: frame.maxX, y: y))
             let edge = (r == 0 || r == numRows)
-            UIColor(white: 0.15, alpha: edge ? 0.82 : 0.38).setStroke()
-            path.lineWidth = edge ? 1.2 : 0.5
+            UIColor(white: 0.14, alpha: edge ? 0.9 : 0.5).setStroke()
+            path.lineWidth = edge ? 1.4 : 0.65
             path.stroke()
         }
         for c in 0...numCols {
@@ -187,13 +188,13 @@ final class PDFExportService: PDFExporting, @unchecked Sendable {
             path.move(to: CGPoint(x: x, y: frame.minY))
             path.addLine(to: CGPoint(x: x, y: frame.maxY))
             let edge = (c == 0 || c == numCols)
-            UIColor(white: 0.15, alpha: edge ? 0.82 : 0.38).setStroke()
-            path.lineWidth = edge ? 1.2 : 0.5
+            UIColor(white: 0.14, alpha: edge ? 0.9 : 0.5).setStroke()
+            path.lineWidth = edge ? 1.4 : 0.65
             path.stroke()
         }
 
         // ── 2. Cell text (drawn after grid so it's on top) ────────────────────
-        let fontSize  = max(7, min(16, cellH * 0.55))
+        let fontSize  = max(8, min(17, cellH * 0.58))
         let paraStyle = NSMutableParagraphStyle()
         paraStyle.lineBreakMode = .byTruncatingTail
         paraStyle.alignment     = .left

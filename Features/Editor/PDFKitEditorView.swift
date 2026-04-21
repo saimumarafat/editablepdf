@@ -182,6 +182,8 @@ struct PencilCanvasView: UIViewRepresentable {
     func makeUIView(context: Context) -> PKCanvasView {
         canvas.backgroundColor = .clear
         canvas.isOpaque        = false
+        canvas.drawingPolicy   = .anyInput
+        canvas.isUserInteractionEnabled = true
         return canvas
     }
     func updateUIView(_ uiView: PKCanvasView, context: Context) {
@@ -377,6 +379,7 @@ struct BottomEditorDock: View {
     @Binding var isDark:       Bool
     var onUndo:   () -> Void
     var onShare:  () -> Void
+    var onSearch: () -> Void
     var onClear:  () -> Void
 
     var body: some View {
@@ -401,13 +404,21 @@ struct BottomEditorDock: View {
             
             // Right Pill: Actions
             HStack(spacing: 20) {
-                ToolIconButton(icon: "info.circle", isActive: false) { }
+                ToolIconButton(icon: "arrow.uturn.backward", isActive: false) {
+                    onUndo()
+                }
                 
                 ToolIconButton(icon: "square.and.arrow.up", isActive: false) {
                     onShare()
                 }
                 
-                ToolIconButton(icon: "magnifyingglass", isActive: false) { }
+                ToolIconButton(icon: "magnifyingglass", isActive: false) {
+                    onSearch()
+                }
+
+                ToolIconButton(icon: "trash", isActive: false) {
+                    onClear()
+                }
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 14)
@@ -632,6 +643,10 @@ struct PDFKitEditorView: View {
     @State private var shareURL:      URL?
     @State private var showShareSheet = false
 
+    // Search
+    @State private var searchText = ""
+    @State private var showSearchPrompt = false
+
     // Undo
     @State private var undoAnnotations: [PDFAnnotation] = []
 
@@ -722,6 +737,7 @@ struct PDFKitEditorView: View {
                     isDark:     themeBinding,
                     onUndo:     undoLastAction,
                     onShare:    exportAndShare,
+                    onSearch:   { showSearchPrompt = true },
                     onClear:    clearAnnotations
                 )
             }
@@ -729,12 +745,18 @@ struct PDFKitEditorView: View {
         // ── Zone 1: Floating glass nav bar ────────────────────────────────
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .toolbar { navToolbar }
         .toolbarBackground(.hidden, for: .navigationBar)
         .overlay(alignment: .top) { customTopDock }
         .sheet(isPresented: $showTextEdit) { textEditSheet }
         .sheet(isPresented: $showBgPicker) { bgPickerSheet }
         .sheet(isPresented: $showShareSheet) { shareSheetView }
+        .alert("Search PDF", isPresented: $showSearchPrompt) {
+            TextField("Text to find", text: $searchText)
+            Button("Find") { performSearch() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Find the first matching text in this document.")
+        }
         .confirmationDialog("Insert Shape", isPresented: $showShapeSheet, titleVisibility: .visible) {
             shapeDialogButtons
         }
@@ -759,11 +781,6 @@ struct PDFKitEditorView: View {
                 .modifier(LiquidGlassEffect(cornerRadius: 20, isDark: isDark))
             }
             .foregroundStyle(.white)
-            
-            Spacer()
-            
-            ThemeToggleSwitch(isDark: themeBinding)
-                .modifier(LiquidGlassEffect(cornerRadius: 16, isDark: isDark))
         }
         .padding(.horizontal, 20)
         .padding(.top, 8)
@@ -809,38 +826,6 @@ struct PDFKitEditorView: View {
         Button("Circle")     { insertShape(.circle) }
         Button("Filled Box") { insertShape(.filled) }
         Button("Cancel", role: .cancel) {}
-    }
-
-    // ── Zone 1: Nav toolbar ───────────────────────────────────────────────────
-    @ToolbarContentBuilder
-    private var navToolbar: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarLeading) {
-            Button { dismiss() } label: {
-                HStack(spacing: 5) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 13, weight: .bold))
-                    Text("Back")
-                        .font(.system(size: 14, weight: .medium))
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(.ultraThinMaterial, in: Capsule())
-                .overlay(Capsule().strokeBorder(
-                    (isDark ? Color.white : Color.black).opacity(0.12), lineWidth: 1
-                ))
-            }
-            .foregroundStyle(isDark ? .white : .primary)
-        }
-
-        ToolbarItem(placement: .principal) {
-            Text(store.document.title)
-                .font(.system(size: 14, weight: .semibold))
-                .lineLimit(1)
-        }
-
-        ToolbarItem(placement: .navigationBarTrailing) {
-            ThemeToggleSwitch(isDark: themeBinding)
-        }
     }
 
     // ── Zone 2: Active tool chip ──────────────────────────────────────────────
@@ -938,7 +923,7 @@ struct PDFKitEditorView: View {
         switch activeTool {
         case .text:       openTextEditor(at: pagePt, on: page)
         case .selection:  pendingPage = page; pendingPoint = pagePt; showShapeSheet = true
-        case .pencil:     showBgPicker = true
+        case .pencil:     break
         default: break
         }
     }
@@ -1065,8 +1050,14 @@ struct PDFKitEditorView: View {
     }
 
     private func exportAndShare() {
-        guard let pdfDoc = pdfHolder.document else { return }
-        guard let pdfData = pdfDoc.dataRepresentation() else { return }
+        guard let pdfDoc = pdfHolder.document else {
+            flash("Nothing to share yet.", isError: true)
+            return
+        }
+        guard let pdfData = pdfDoc.dataRepresentation() else {
+            flash("Unable to prepare share document.", isError: true)
+            return
+        }
         let title = store.document.title.isEmpty ? "EditablePDF" : store.document.title
         let tmp = FileManager.default.temporaryDirectory
             .appendingPathComponent(title)
@@ -1075,8 +1066,31 @@ struct PDFKitEditorView: View {
             try pdfData.write(to: tmp)
             shareURL      = tmp
             showShareSheet = true
+            flash("Share sheet ready")
         } catch {
             flash("Export failed: \(error.localizedDescription)", isError: true)
+        }
+    }
+
+    private func performSearch() {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else {
+            flash("Enter text to search.", isError: true)
+            return
+        }
+        guard let doc = pdfHolder.document else {
+            flash("No document available.", isError: true)
+            return
+        }
+
+        if let match = doc.findString(query, withOptions: .caseInsensitive).first,
+           let page = match.pages.first {
+            pdfHolder.view.go(to: page)
+            pdfHolder.view.setCurrentSelection(match, animate: true)
+            pdfHolder.view.highlightedSelections = [match]
+            flash("Found: \(query)")
+        } else {
+            flash("No match for \"\(query)\"", isError: true)
         }
     }
 

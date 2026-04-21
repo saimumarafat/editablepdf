@@ -66,7 +66,11 @@ final class DocumentStore: ObservableObject {
             await analyzeIfNeeded(using: analysisClient)
 
             isProcessing = false
-            statusMessage = "Image is ready. You can edit or save from the main screen."
+            if document.analysisState == .failed {
+                statusMessage = "Image is ready, but text recognition is unavailable for this scan. You can still edit manually."
+            } else {
+                statusMessage = "Image is ready. You can edit or save from the main screen."
+            }
         } catch {
             isProcessing = false
             statusMessage = "Image processing failed: \(error.localizedDescription)"
@@ -107,16 +111,13 @@ final class DocumentStore: ObservableObject {
         page.size = PageSize(width: response.page.pageSize.width, height: response.page.pageSize.height)
         page.sourceImageData = analysisImage?.jpegData(compressionQuality: 0.95)
 
-        // ── CRITICAL: Always use the original scanned image as the page background.
-        // Attempting to reconstruct colours from Vision's sampler produces wrong results
-        // (especially for coloured backgrounds, tables, or non-Latin scripts like Bangla).
-        page.background = .originalImage
+        // Normalize final reconstruction to a clean logical black-on-white page.
+        page.background = .white
 
         let textBlocks = deduplicatedTextBlocks(response.page.textBlocks)
 
-        // Auto-detected text: store for the editor overlay but mark isUserEdited = false.
-        // The exporter will skip these so the original image is preserved.
-        page.elements = textBlocks.map { block in
+        // Build a raw, reconstructed page from detected text + image regions + tables.
+        let textElements: [PageElement] = textBlocks.map { block in
             .text(TextElement(
                 text:        block.text,
                 frame:       Rect(x: block.frame.x, y: block.frame.y, width: block.frame.width, height: block.frame.height),
@@ -128,17 +129,77 @@ final class DocumentStore: ObservableObject {
                 backgroundColor: block.backgroundColor.map {
                     RGBAColor(red: $0.red, green: $0.green, blue: $0.blue, alpha: $0.alpha)
                 },
-                isUserEdited: true   // All detected text is now considered "live" and editable
+                isUserEdited: false
             ))
         }
 
-        // ── Image blocks & table blocks are intentionally NOT added to page.elements.
-        // They were drawing opaque boxes over the original image and misclassifying
-        // coloured table rows as image regions. The source image shows them correctly.
+        let tableElements: [PageElement] = response.page.tableBlocks.map { block in
+            .table(TableElement(
+                rows: block.rows,
+                frame: Rect(x: block.frame.x, y: block.frame.y, width: block.frame.width, height: block.frame.height),
+                confidence: block.confidence
+            ))
+        }
+
+        let tableRects = tableElements.compactMap { element -> CGRect? in
+            if case .table(let table) = element {
+                return table.frame.cgRect
+            }
+            return nil
+        }
+
+        let textRects = textElements.compactMap { element -> CGRect? in
+            if case .text(let text) = element {
+                return text.frame.cgRect
+            }
+            return nil
+        }
+
+        let filteredImageBlocks = response.page.imageBlocks.filter { block in
+            let rect = block.frame.cgRect
+            let area = max(rect.width * rect.height, 1)
+            let pageArea = max(page.size.width * page.size.height, 1)
+            let areaRatio = area / pageArea
+            guard block.confidence >= 0.40 else { return false }
+            guard areaRatio >= 0.015 && areaRatio <= 0.35 else { return false }
+
+            let tableCoverage = tableRects.reduce(0.0) { partial, t in
+                let overlap = rect.intersection(t)
+                guard !overlap.isNull, !overlap.isEmpty else { return partial }
+                return partial + (overlap.width * overlap.height)
+            } / area
+            if tableCoverage > 0.20 { return false }
+
+            let textCoverage = textRects.reduce(0.0) { partial, t in
+                let overlap = rect.intersection(t)
+                guard !overlap.isNull, !overlap.isEmpty else { return partial }
+                return partial + (overlap.width * overlap.height)
+            } / area
+            if textCoverage > 0.45 { return false }
+
+            return true
+        }
+
+        // Table-first mode: when structure is clearly tabular/textual, suppress image blocks.
+        let useTableFirstMode = tableElements.count >= 1 && textElements.count >= 8
+        let imageSource = useTableFirstMode ? [] : filteredImageBlocks
+
+        let imageElements: [PageElement] = imageSource.map { block in
+            .image(ImageElement(
+                frame: Rect(x: block.frame.x, y: block.frame.y, width: block.frame.width, height: block.frame.height),
+                fillColor: block.dominantColor.map {
+                    RGBAColor(red: $0.red, green: $0.green, blue: $0.blue, alpha: $0.alpha)
+                },
+                confidence: block.confidence,
+                renderStyle: .solidColor
+            ))
+        }
+
+        page.elements = textElements + imageElements + tableElements
 
         document.pages[0] = page
         document.analysisState = .refined
-        statusMessage = "Analysis complete. Detected \(textBlocks.count) text block(s). Use the editor to add or correct content."
+        statusMessage = "Analysis complete. Detected \(textBlocks.count) text block(s), \(imageElements.count) image region(s), and \(tableElements.count) table(s)."
     }
 
     func addTextElement() {
@@ -232,7 +293,9 @@ final class DocumentStore: ObservableObject {
                 continue
             }
 
-            document.pages[pageIndex].elements[index] = .text(element)
+            var updatedElement = element
+            updatedElement.isUserEdited = true
+            document.pages[pageIndex].elements[index] = .text(updatedElement)
             document.analysisState = .refined
             statusMessage = "Text updated. Save again to write the edited PDF to Files."
             return
@@ -280,8 +343,7 @@ final class DocumentStore: ObservableObject {
             // sometimes outputs multiple fragmented candidates for the same physical word.
             // We discard the lower confidence one regardless of string content.
             let physicallyOverlaps = uniqueBlocks.contains { existing in
-                // VERY aggressive overlap threshold (20%) to kill all ghosting
-                candidateRect.intersectionRatio(with: existing.frame.cgRect) > 0.20
+                candidateRect.intersectionRatio(with: existing.frame.cgRect) > 0.60
             }
 
             if !physicallyOverlaps {

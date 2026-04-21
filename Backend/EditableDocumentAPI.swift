@@ -33,15 +33,38 @@ final class VisionDocumentAnalysisClient: DocumentAnalysisClient, @unchecked Sen
         // ── Phase 3: Merge remaining (non-table) image boxes ─────────────────
         let mergedBoxes = mergeOverlappingBoxes(imageBoxes, imageSize: imageSize)
 
+        // ── Phase 3.5: Suppress noisy regions over table/text-dense areas ────
+        let tableRects = tableBlocks.map { $0.frame.cgRect }
+        let textRects  = rawText.map { $0.frame.cgRect }
+        let cleanedMergedBoxes = mergedBoxes.filter { item in
+            let box = item.frame
+            let boxArea = max(box.width * box.height, 1)
+
+            let tableCoverage = tableRects.reduce(0.0) { partial, t in
+                let overlap = box.intersection(t)
+                guard !overlap.isNull, !overlap.isEmpty else { return partial }
+                return partial + (overlap.width * overlap.height)
+            } / boxArea
+            if tableCoverage > 0.18 { return false }
+
+            let textCoverage = textRects.reduce(0.0) { partial, t in
+                let overlap = box.intersection(t)
+                guard !overlap.isNull, !overlap.isEmpty else { return partial }
+                return partial + (overlap.width * overlap.height)
+            } / boxArea
+            if textCoverage > 0.40 { return false }
+
+            return true
+        }
+
         // ── Phase 4: Colorize each merged box ─────────────────────────────────
         let colorizedBoxes: [(frame: CGRect, confidence: Float, color: RGBAColorCodable?)] =
-            mergedBoxes.map { frame, conf in
+            cleanedMergedBoxes.map { frame, conf in
                 let color = sampleDominantColor(in: frame, from: cgImage, imageSize: imageSize)
                 return (frame, conf, color)
             }
 
         // ── Phase 5: Remove boxes that are just text outlines (>85% overlap) ─
-        let textRects  = rawText.map { $0.frame.cgRect }
         let finalBoxes = colorizedBoxes.filter { item in
             !textRects.contains { tRect in
                 tRect.intersectionRatio(with: item.frame) > 0.85
@@ -178,12 +201,13 @@ final class VisionDocumentAnalysisClient: DocumentAnalysisClient, @unchecked Sen
 
         // ── Step 5: Build text blocks (no dedup needed — single pass) ─────────
         let textBlocks: [BackendTextBlock] = (textRequest.results ?? []).compactMap { obs in
-            guard let top = obs.topCandidates(1).first, top.confidence > 0.06 else { return nil }
+            guard let top = obs.topCandidates(1).first, top.confidence > 0.22 else { return nil }
             let frame = visionToUIKit(obs.boundingBox, imageSize: imageSize)
             guard frame.width >= 1, frame.height >= 1 else { return nil }
+            let normalizedText = normalizedOCRText(top.string, confidence: Double(top.confidence))
             let color = foregroundColorForText(in: frame, from: cgImage, imageSize: imageSize)
             return BackendTextBlock(
-                text:       top.string,
+                text:       normalizedText,
                 frame:      CGRectCodable(frame: frame),
                 fontSize:   Double(frame.height * 0.78).clamped(to: 7...72),
                 textColor:  color,
@@ -291,6 +315,22 @@ final class VisionDocumentAnalysisClient: DocumentAnalysisClient, @unchecked Sen
             if !isDuplicate { result.append(candidate) }
         }
         return result
+    }
+
+    private func normalizedOCRText(_ value: String, confidence: Double) -> String {
+        let trimmed = value
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmed.isEmpty else { return "[UNCLEAR]" }
+        if confidence >= 0.80 { return trimmed }
+
+        let alnumCount = trimmed.unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) }.count
+        let ratio = Double(alnumCount) / Double(max(trimmed.count, 1))
+        if ratio < 0.45 || trimmed.count < 2 {
+            return "[UNCLEAR]"
+        }
+        return trimmed
     }
 
     /// Normalised Levenshtein similarity in [0,1].
@@ -413,8 +453,12 @@ final class VisionDocumentAnalysisClient: DocumentAnalysisClient, @unchecked Sen
         // column-aligned grid, we synthesize a table.
         let syntheticTable = detectTextGridTable(textBlocks: textBlocks, imageSize: imageSize)
         if let tbl = syntheticTable {
-            // Remove text-grid rects from imageBoxes (no rectangle candidates to strip)
-            tableBlocks.append(tbl)
+            let isDuplicate = tableBlocks.contains { existing in
+                existing.frame.cgRect.intersectionRatio(with: tbl.frame.cgRect) > 0.50
+            }
+            if !isDuplicate {
+                tableBlocks.append(tbl)
+            }
         }
 
         let remainingBoxes = pixelBoxes.enumerated()
