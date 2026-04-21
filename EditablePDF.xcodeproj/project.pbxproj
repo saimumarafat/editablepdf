@@ -1,0 +1,352 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		000000000000000000000011 /* EditablePDFApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000004 /* EditablePDFApp.swift */; };
+		000000000000000000000012 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000005 /* DesignSystem.swift */; };
+		000000000000000000000013 /* DocumentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000006 /* DocumentModels.swift */; };
+		000000000000000000000014 /* ImageProcessingPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000007 /* ImageProcessingPipeline.swift */; };
+		000000000000000000000015 /* PDFExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000008 /* PDFExportService.swift */; };
+		00000000000000000000001D /* PDFExportDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000001C /* PDFExportDocument.swift */; };
+		000000000000000000000016 /* EditableDocumentAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000009 /* EditableDocumentAPI.swift */; };
+		BBFC1B230620D545DA8FA489 /* LayerAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3B2335BD530E4111997601 /* LayerAnalysisService.swift */; };
+		000000000000000000000017 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000000A /* HomeView.swift */; };
+		000000000000000000000018 /* DocumentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000000B /* DocumentStore.swift */; };
+		000000000000000000000019 /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000000C /* CaptureView.swift */; };
+		00000000000000000000001A /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000000D /* ImagePicker.swift */; };
+		AA000000000000PDFKitEdView02 /* PDFKitEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000PDFKitEdView01 /* PDFKitEditorView.swift */; };
+		00000000000000000000001B /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000000E /* EditorView.swift */; };
+		00000000000000000000001F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000001E /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		000000000000000000000002 /* EditablePDF.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EditablePDF.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000004 /* EditablePDFApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/EditablePDFApp.swift; sourceTree = SOURCE_ROOT; };
+		000000000000000000000005 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/DesignSystem/DesignSystem.swift; sourceTree = SOURCE_ROOT; };
+		000000000000000000000006 /* DocumentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/DocumentModel/DocumentModels.swift; sourceTree = SOURCE_ROOT; };
+		000000000000000000000007 /* ImageProcessingPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Processing/ImageProcessingPipeline.swift; sourceTree = SOURCE_ROOT; };
+		000000000000000000000008 /* PDFExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Processing/PDFExportService.swift; sourceTree = SOURCE_ROOT; };
+		00000000000000000000001C /* PDFExportDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Processing/PDFExportDocument.swift; sourceTree = SOURCE_ROOT; };
+		000000000000000000000009 /* EditableDocumentAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend/EditableDocumentAPI.swift; sourceTree = SOURCE_ROOT; };
+		AA3B2335BD530E4111997601 /* LayerAnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend/LayerAnalysisService.swift; sourceTree = SOURCE_ROOT; };
+		00000000000000000000000A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Home/HomeView.swift; sourceTree = SOURCE_ROOT; };
+		00000000000000000000000B /* DocumentStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Home/DocumentStore.swift; sourceTree = SOURCE_ROOT; };
+		00000000000000000000000C /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Capture/CaptureView.swift; sourceTree = SOURCE_ROOT; };
+		00000000000000000000000D /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Capture/ImagePicker.swift; sourceTree = SOURCE_ROOT; };
+		AA000000000000PDFKitEdView01 /* PDFKitEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Editor/PDFKitEditorView.swift; sourceTree = SOURCE_ROOT; };
+		00000000000000000000000E /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Editor/EditorView.swift; sourceTree = SOURCE_ROOT; };
+		00000000000000000000000F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = SOURCE_ROOT; };
+		00000000000000000000001E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXResourcesBuildPhase section */
+		000000000000000000000029 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				00000000000000000000001F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		000000000000000000000030 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		000000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000031 /* App */,
+				000000000000000000000032 /* Core */,
+				000000000000000000000035 /* Resources */,
+				000000000000000000000033 /* Backend */,
+				000000000000000000000034 /* Features */,
+				00000000000000000000000F /* Info.plist */,
+				000000000000000000000020 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		000000000000000000000031 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000004 /* EditablePDFApp.swift */,
+			);
+			path = App;
+			sourceTree = SOURCE_ROOT;
+		};
+		000000000000000000000032 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000036 /* DesignSystem */,
+				000000000000000000000037 /* DocumentModel */,
+				000000000000000000000038 /* Processing */,
+			);
+			path = Core;
+			sourceTree = SOURCE_ROOT;
+		};
+		000000000000000000000035 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000001E /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = SOURCE_ROOT;
+		};
+		000000000000000000000036 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000005 /* DesignSystem.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = SOURCE_ROOT;
+		};
+		000000000000000000000037 /* DocumentModel */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000006 /* DocumentModels.swift */,
+			);
+			path = DocumentModel;
+			sourceTree = SOURCE_ROOT;
+		};
+		000000000000000000000038 /* Processing */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000007 /* ImageProcessingPipeline.swift */,
+				000000000000000000000008 /* PDFExportService.swift */,
+				00000000000000000000001C /* PDFExportDocument.swift */,
+			);
+			path = Processing;
+			sourceTree = SOURCE_ROOT;
+		};
+		000000000000000000000033 /* Backend */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000009 /* EditableDocumentAPI.swift */,
+				AA3B2335BD530E4111997601 /* LayerAnalysisService.swift */,
+			);
+			path = Backend;
+			sourceTree = SOURCE_ROOT;
+		};
+		000000000000000000000034 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000039 /* Home */,
+				00000000000000000000003A /* Capture */,
+				00000000000000000000003B /* Editor */,
+			);
+			path = Features;
+			sourceTree = SOURCE_ROOT;
+		};
+		000000000000000000000039 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000000A /* HomeView.swift */,
+				00000000000000000000000B /* DocumentStore.swift */,
+			);
+			path = Home;
+			sourceTree = SOURCE_ROOT;
+		};
+		00000000000000000000003A /* Capture */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000000C /* CaptureView.swift */,
+				00000000000000000000000D /* ImagePicker.swift */,
+			);
+			path = Capture;
+			sourceTree = SOURCE_ROOT;
+		};
+		00000000000000000000003B /* Editor */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000000E /* EditorView.swift */,
+				AA000000000000PDFKitEdView01 /* PDFKitEditorView.swift */,
+			);
+			path = Editor;
+			sourceTree = SOURCE_ROOT;
+		};
+		000000000000000000000020 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000002 /* EditablePDF.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		000000000000000000000102 /* EditablePDF */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000050 /* Build configuration list for PBXNativeTarget "EditablePDF" */;
+			buildPhases = (
+				000000000000000000000040 /* Sources */,
+				000000000000000000000029 /* Resources */,
+				000000000000000000000030 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EditablePDF;
+			productName = EditablePDF;
+			productReference = 000000000000000000000002 /* EditablePDF.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000000000000000000000101 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2630;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					000000000000000000000102 = {
+						CreatedOnToolsVersion = 26.4;
+					};
+				};
+			};
+			buildConfigurationList = 000000000000000000000060 /* Build configuration list for PBXProject "EditablePDF" */;
+			compatibilityVersion = "Xcode 26.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 000000000000000000000001;
+			productRefGroup = 000000000000000000000020 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				000000000000000000000102 /* EditablePDF */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		000000000000000000000040 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000011 /* EditablePDFApp.swift in Sources */,
+				000000000000000000000012 /* DesignSystem.swift in Sources */,
+				000000000000000000000013 /* DocumentModels.swift in Sources */,
+				000000000000000000000014 /* ImageProcessingPipeline.swift in Sources */,
+				000000000000000000000015 /* PDFExportService.swift in Sources */,
+				00000000000000000000001D /* PDFExportDocument.swift in Sources */,
+				000000000000000000000016 /* EditableDocumentAPI.swift in Sources */,
+				BBFC1B230620D545DA8FA489 /* LayerAnalysisService.swift in Sources */,
+				000000000000000000000017 /* HomeView.swift in Sources */,
+				000000000000000000000018 /* DocumentStore.swift in Sources */,
+				000000000000000000000019 /* CaptureView.swift in Sources */,
+				00000000000000000000001A /* ImagePicker.swift in Sources */,
+				00000000000000000000001B /* EditorView.swift in Sources */,
+				AA000000000000PDFKitEdView02 /* PDFKitEditorView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		000000000000000000000070 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"\"";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.saimumarafat.EditablePDF;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		000000000000000000000071 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"\"";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.saimumarafat.EditablePDF;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		000000000000000000000050 /* Build configuration list for PBXNativeTarget "EditablePDF" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000070 /* Debug */,
+				000000000000000000000071 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000060 /* Build configuration list for PBXProject "EditablePDF" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000070 /* Debug */,
+				000000000000000000000071 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+		rootObject = 000000000000000000000101 /* Project object */;
+}
