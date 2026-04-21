@@ -204,7 +204,7 @@ final class VisionDocumentAnalysisClient: DocumentAnalysisClient, @unchecked Sen
             guard let top = obs.topCandidates(1).first, top.confidence > 0.22 else { return nil }
             let frame = visionToUIKit(obs.boundingBox, imageSize: imageSize)
             guard frame.width >= 1, frame.height >= 1 else { return nil }
-            let normalizedText = normalizedOCRText(top.string, confidence: Double(top.confidence))
+            let normalizedText = normalizedOCRText(top.string)
             let color = foregroundColorForText(in: frame, from: cgImage, imageSize: imageSize)
             return BackendTextBlock(
                 text:       normalizedText,
@@ -317,19 +317,12 @@ final class VisionDocumentAnalysisClient: DocumentAnalysisClient, @unchecked Sen
         return result
     }
 
-    private func normalizedOCRText(_ value: String, confidence: Double) -> String {
+    /// Keeps Vision’s raw string so PDF export and editing stay usable; low-confidence
+    /// strings still get low `qualityScore` / `needsReview` upstream instead of placeholders.
+    private func normalizedOCRText(_ value: String) -> String {
         let trimmed = value
             .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        guard !trimmed.isEmpty else { return "[UNCLEAR]" }
-        if confidence >= 0.80 { return trimmed }
-
-        let alnumCount = trimmed.unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) }.count
-        let ratio = Double(alnumCount) / Double(max(trimmed.count, 1))
-        if ratio < 0.45 || trimmed.count < 2 {
-            return "[UNCLEAR]"
-        }
         return trimmed
     }
 

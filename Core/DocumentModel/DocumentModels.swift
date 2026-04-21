@@ -8,10 +8,17 @@ struct EditableDocument: Identifiable, Codable, Equatable {
     var pages: [DocumentPage]
     var sourceImageURLs: [URL] = []
     var analysisState: AnalysisState = .idle
+    var exportMode: ExportMode = .fidelity
 
     static func empty() -> EditableDocument {
         EditableDocument(title: "Untitled Document", pages: [])
     }
+}
+
+enum ExportMode: String, Codable, Equatable, CaseIterable {
+    case fidelity = "Fidelity"
+    case hybrid = "Hybrid"
+    case structured = "Structured"
 }
 
 struct DocumentPage: Identifiable, Codable, Equatable {
@@ -71,6 +78,10 @@ struct TextElement: Identifiable, Codable, Equatable {
     var backgroundColor: RGBAColor?
     /// true = manually added or edited by the user; false = auto-detected by OCR
     var isUserEdited: Bool = false
+    /// normalized quality score [0, 1] used by frontend quality gate
+    var qualityScore: Double = 1
+    /// true when element should be reviewed before structured export
+    var needsReview: Bool = false
 }
 
 enum TextAlignmentOption: String, Codable, Equatable {
@@ -88,6 +99,8 @@ struct ImageElement: Identifiable, Codable, Equatable {
     var fillColor: RGBAColor?
     var confidence: Double = 1
     var renderStyle: ImageRenderStyle = .imageSnippet
+    var qualityScore: Double = 1
+    var needsReview: Bool = false
 }
 
 enum ImageRenderStyle: String, Codable, Equatable, CaseIterable {
@@ -100,6 +113,8 @@ struct TableElement: Identifiable, Codable, Equatable {
     var rows: [[String]]
     var frame: Rect
     var confidence: Double = 1
+    var qualityScore: Double = 1
+    var needsReview: Bool = false
 }
 
 struct Rect: Codable, Equatable {

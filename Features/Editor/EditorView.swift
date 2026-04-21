@@ -31,12 +31,17 @@ struct EditorView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
                     header
+                    exportModeCard
                     documentPreview
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Detected text regions: \(store.textElements.count)")
                             .font(DesignSystem.Typography.footnote)
                             .foregroundStyle(DesignSystem.Colors.subtleText)
+
+                        Text("Review queue: \(store.reviewQueueCount) items")
+                            .font(DesignSystem.Typography.footnote)
+                            .foregroundStyle(store.reviewQueueCount == 0 ? DesignSystem.Colors.subtleText : .orange)
 
                         if let message = store.statusMessage {
                             Text(message)
@@ -99,10 +104,12 @@ struct EditorView: View {
 
             Group {
                 if let previewImage = store.previewImage {
-                    Image(uiImage: previewImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: .infinity)
+                    ZoomableScrollView {
+                        Image(uiImage: previewImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity)
+                    }
                 } else {
                     VStack(spacing: DesignSystem.Spacing.sm) {
                         Image(systemName: "doc.richtext")
@@ -122,6 +129,26 @@ struct EditorView: View {
             .padding(DesignSystem.Spacing.sm)
             .liquidGlassEffect(cornerRadius: DesignSystem.Radius.card, isDark: isDarkTheme)
         }
+    }
+
+    private var exportModeCard: some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+            Text("Export Quality")
+                .font(DesignSystem.Typography.headline)
+
+            Picker("Export Mode", selection: $store.selectedExportMode) {
+                ForEach(ExportMode.allCases, id: \.self) { mode in
+                    Text(mode.rawValue).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            Text(modeDescription(store.selectedExportMode))
+                .font(DesignSystem.Typography.footnote)
+                .foregroundStyle(DesignSystem.Colors.subtleText)
+        }
+        .padding(DesignSystem.Spacing.md)
+        .liquidGlassEffect(cornerRadius: DesignSystem.Radius.card, isDark: isDarkTheme)
     }
 
     private var floatingActionRow: some View {
@@ -162,6 +189,17 @@ struct EditorView: View {
         let components = value.components(separatedBy: invalidCharacters)
         let joined = components.joined(separator: "_").trimmingCharacters(in: .whitespacesAndNewlines)
         return joined.isEmpty ? "EditablePDF" : joined
+    }
+
+    private func modeDescription(_ mode: ExportMode) -> String {
+        switch mode {
+        case .fidelity:
+            return "Top reliability. Keeps original scan and applies only your manual text edits."
+        case .hybrid:
+            return "Balanced output. Keeps source scan and overlays only high-quality detections."
+        case .structured:
+            return "Full reconstruction from detections. Use when review queue is near zero."
+        }
     }
 }
 
@@ -262,6 +300,15 @@ struct PreviewEditorView: View {
                                 .font(DesignSystem.Typography.footnote)
                                 .foregroundStyle(DesignSystem.Colors.subtleText)
 
+                            Text("Quality score: \(Int(selectedText.qualityScore * 100))%")
+                                .font(DesignSystem.Typography.footnote)
+                                .foregroundStyle(selectedText.needsReview ? .orange : DesignSystem.Colors.subtleText)
+
+                            Button(selectedText.needsReview ? "Mark as Reviewed" : "Mark Needs Review") {
+                                store.toggleTextReview(id: id)
+                            }
+                            .buttonStyle(.bordered)
+
                             TextField("Updated text", text: Binding(
                                 get: { textBinding.wrappedValue.text },
                                 set: { newValue in
@@ -300,6 +347,15 @@ struct PreviewEditorView: View {
                             Text("Confidence: \(Int(imageBinding.wrappedValue.confidence * 100))%")
                                 .font(DesignSystem.Typography.footnote)
                                 .foregroundStyle(DesignSystem.Colors.subtleText)
+
+                            Text("Quality score: \(Int(imageBinding.wrappedValue.qualityScore * 100))%")
+                                .font(DesignSystem.Typography.footnote)
+                                .foregroundStyle(imageBinding.wrappedValue.needsReview ? .orange : DesignSystem.Colors.subtleText)
+
+                            Button(imageBinding.wrappedValue.needsReview ? "Mark as Reviewed" : "Mark Needs Review") {
+                                store.toggleImageReview(id: id)
+                            }
+                            .buttonStyle(.bordered)
                         }
                     }
                     .padding(DesignSystem.Spacing.md)

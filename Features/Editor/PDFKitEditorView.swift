@@ -885,7 +885,7 @@ struct PDFKitEditorView: View {
         isDocumentReady = true
 
         // ── Use the real Export Service to build the "Raw PDF" for the editor ──
-        if let pdfData = try? store.exportService.export(document: store.document),
+        if let pdfData = try? store.exportService.export(document: store.document, mode: store.selectedExportMode),
            let pdfDoc  = PDFDocument(data: pdfData) {
             pdfHolder.load(pdfDoc)
         } else {

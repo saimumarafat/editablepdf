@@ -4,11 +4,11 @@ import PDFKit
 import CoreGraphics
 
 protocol PDFExporting: Sendable {
-    func export(document: EditableDocument) throws -> Data
+    func export(document: EditableDocument, mode: ExportMode) throws -> Data
 }
 
 final class PDFExportService: PDFExporting, @unchecked Sendable {
-    func export(document: EditableDocument) throws -> Data {
+    func export(document: EditableDocument, mode: ExportMode) throws -> Data {
         let format = UIGraphicsPDFRendererFormat()
         let meta: [String: Any] = [
             kCGPDFContextCreator as String: "EditablePDF",
@@ -26,31 +26,74 @@ final class PDFExportService: PDFExporting, @unchecked Sendable {
 
                 UIGraphicsPushContext(context.cgContext)
 
-                // If the page has extracted elements, build a reconstructed PDF page.
-                // Otherwise, fall back to embedding the original source image.
-                let hasStructuredElements = !page.elements.isEmpty
-
-                if hasStructuredElements {
-                    fillBackground(for: page, in: pageRect)
-
-                    let sourceImage = page.sourceImageData.flatMap(UIImage.init(data:))
-                    for element in page.elements {
-                        switch element {
-                        case .text(let text):
-                            drawText(text, pageRect: pageRect)
-                        case .image(let image):
-                            drawImageElement(image, pageRect: pageRect, sourceImage: sourceImage)
-                        case .table(let table):
-                            drawTable(table, pageRect: pageRect)
-                        }
-                    }
-                } else if let data = page.sourceImageData, let img = UIImage(data: data) {
-                    img.draw(in: pageRect)
-                } else {
-                    fillBackground(for: page, in: pageRect)
-                }
+                render(page: page, pageRect: pageRect, mode: mode)
 
                 UIGraphicsPopContext()
+            }
+        }
+    }
+
+    private func render(page: DocumentPage, pageRect: CGRect, mode: ExportMode) {
+        let sourceImage = page.sourceImageData.flatMap(UIImage.init(data:))
+        let hasStructuredElements = !page.elements.isEmpty
+
+        switch mode {
+        case .fidelity:
+            // Preserve the original scan and only overlay manual user edits.
+            if let src = sourceImage {
+                src.draw(in: pageRect)
+            } else {
+                fillBackground(for: page, in: pageRect)
+            }
+            for element in page.elements {
+                if case .text(let text) = element, text.isUserEdited {
+                    drawText(text, pageRect: pageRect)
+                }
+            }
+
+        case .hybrid:
+            // Keep the scan as base; overlay OCR that clears a modest quality bar.
+            // `needsReview` is advisory in the UI — it does not block export here.
+            if let src = sourceImage {
+                src.draw(in: pageRect)
+            } else {
+                fillBackground(for: page, in: pageRect)
+            }
+            for element in page.elements {
+                switch element {
+                case .text(let text):
+                    if text.isUserEdited || text.qualityScore >= 0.62 {
+                        drawText(text, pageRect: pageRect)
+                    }
+                case .image(let image):
+                    if !image.needsReview && image.qualityScore >= 0.72 {
+                        drawImageElement(image, pageRect: pageRect, sourceImage: sourceImage)
+                    }
+                case .table(let table):
+                    if !table.needsReview && table.qualityScore >= 0.72 {
+                        drawTable(table, pageRect: pageRect)
+                    }
+                }
+            }
+
+        case .structured:
+            // Fully reconstructed page from detected structure.
+            if hasStructuredElements {
+                fillBackground(for: page, in: pageRect)
+                for element in page.elements {
+                    switch element {
+                    case .text(let text):
+                        drawText(text, pageRect: pageRect)
+                    case .image(let image):
+                        drawImageElement(image, pageRect: pageRect, sourceImage: sourceImage)
+                    case .table(let table):
+                        drawTable(table, pageRect: pageRect)
+                    }
+                }
+            } else if let src = sourceImage {
+                src.draw(in: pageRect)
+            } else {
+                fillBackground(for: page, in: pageRect)
             }
         }
     }
@@ -78,7 +121,12 @@ final class PDFExportService: PDFExporting, @unchecked Sendable {
         let fontSize = max(text.fontSize, 9)
         let font = AppFont.resolveUIFont(id: text.fontName, size: fontSize)
 
-        let inkColor = UIColor.black
+        let inkColor = UIColor(
+            red: CGFloat(text.color.red),
+            green: CGFloat(text.color.green),
+            blue: CGFloat(text.color.blue),
+            alpha: CGFloat(text.color.alpha)
+        )
 
         let attrs: [NSAttributedString.Key: Any] = [
             .font:            font,

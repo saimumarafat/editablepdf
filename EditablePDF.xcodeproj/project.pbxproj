@@ -12,6 +12,7 @@
 		000000000000000000000013 /* DocumentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000006 /* DocumentModels.swift */; };
 		000000000000000000000014 /* ImageProcessingPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000007 /* ImageProcessingPipeline.swift */; };
 		000000000000000000000015 /* PDFExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000008 /* PDFExportService.swift */; };
+		000000000000000000000041 /* StringSimilarity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000043 /* StringSimilarity.swift */; };
 		00000000000000000000001D /* PDFExportDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000001C /* PDFExportDocument.swift */; };
 		000000000000000000000016 /* EditableDocumentAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000009 /* EditableDocumentAPI.swift */; };
 		BBFC1B230620D545DA8FA489 /* LayerAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3B2335BD530E4111997601 /* LayerAnalysisService.swift */; };
@@ -20,6 +21,7 @@
 		000000000000000000000019 /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000000C /* CaptureView.swift */; };
 		00000000000000000000001A /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000000D /* ImagePicker.swift */; };
 		AA000000000000PDFKitEdView02 /* PDFKitEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000PDFKitEdView01 /* PDFKitEditorView.swift */; };
+		000000000000000000000042 /* ZoomableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000044 /* ZoomableScrollView.swift */; };
 		00000000000000000000001B /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000000E /* EditorView.swift */; };
 		00000000000000000000001F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000001E /* Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -31,6 +33,7 @@
 		000000000000000000000006 /* DocumentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/DocumentModel/DocumentModels.swift; sourceTree = SOURCE_ROOT; };
 		000000000000000000000007 /* ImageProcessingPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Processing/ImageProcessingPipeline.swift; sourceTree = SOURCE_ROOT; };
 		000000000000000000000008 /* PDFExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Processing/PDFExportService.swift; sourceTree = SOURCE_ROOT; };
+		000000000000000000000043 /* StringSimilarity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Processing/StringSimilarity.swift; sourceTree = SOURCE_ROOT; };
 		00000000000000000000001C /* PDFExportDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Processing/PDFExportDocument.swift; sourceTree = SOURCE_ROOT; };
 		000000000000000000000009 /* EditableDocumentAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend/EditableDocumentAPI.swift; sourceTree = SOURCE_ROOT; };
 		AA3B2335BD530E4111997601 /* LayerAnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend/LayerAnalysisService.swift; sourceTree = SOURCE_ROOT; };
@@ -39,6 +42,7 @@
 		00000000000000000000000C /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Capture/CaptureView.swift; sourceTree = SOURCE_ROOT; };
 		00000000000000000000000D /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Capture/ImagePicker.swift; sourceTree = SOURCE_ROOT; };
 		AA000000000000PDFKitEdView01 /* PDFKitEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Editor/PDFKitEditorView.swift; sourceTree = SOURCE_ROOT; };
+		000000000000000000000044 /* ZoomableScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Editor/ZoomableScrollView.swift; sourceTree = SOURCE_ROOT; };
 		00000000000000000000000E /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Editor/EditorView.swift; sourceTree = SOURCE_ROOT; };
 		00000000000000000000000F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = SOURCE_ROOT; };
 		00000000000000000000001E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = SOURCE_ROOT; };
@@ -127,6 +131,7 @@
 			children = (
 				000000000000000000000007 /* ImageProcessingPipeline.swift */,
 				000000000000000000000008 /* PDFExportService.swift */,
+				000000000000000000000043 /* StringSimilarity.swift */,
 				00000000000000000000001C /* PDFExportDocument.swift */,
 			);
 			path = Processing;
@@ -174,6 +179,7 @@
 			children = (
 				00000000000000000000000E /* EditorView.swift */,
 				AA000000000000PDFKitEdView01 /* PDFKitEditorView.swift */,
+				000000000000000000000044 /* ZoomableScrollView.swift */,
 			);
 			path = Editor;
 			sourceTree = SOURCE_ROOT;
@@ -249,6 +255,7 @@
 				000000000000000000000013 /* DocumentModels.swift in Sources */,
 				000000000000000000000014 /* ImageProcessingPipeline.swift in Sources */,
 				000000000000000000000015 /* PDFExportService.swift in Sources */,
+				000000000000000000000041 /* StringSimilarity.swift in Sources */,
 				00000000000000000000001D /* PDFExportDocument.swift in Sources */,
 				000000000000000000000016 /* EditableDocumentAPI.swift in Sources */,
 				BBFC1B230620D545DA8FA489 /* LayerAnalysisService.swift in Sources */,
@@ -258,6 +265,7 @@
 				00000000000000000000001A /* ImagePicker.swift in Sources */,
 				00000000000000000000001B /* EditorView.swift in Sources */,
 				AA000000000000PDFKitEdView02 /* PDFKitEditorView.swift in Sources */,
+				000000000000000000000042 /* ZoomableScrollView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
